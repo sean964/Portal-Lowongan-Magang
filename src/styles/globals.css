@@ -2,32 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+.toOren {
+  transition: 0.3 ease-out !important;
+}
+.toOren:hover {
+  background-color: #ff7900 !important;
+  transform: translateX(.6rem)!important
+}
+.toOren:active {
+  transform: scale(0.95) !important;
+}
+.shadowCustom {
+  box-shadow: 5px 0px 15px 0px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 5px 0px 15px 0px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 5px 0px 15px 0px rgba(0, 0, 0, 0.5);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+.buton:active{
+  transform: scale(.6);
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+.back{
+  background-color: #00000094!important
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.oren{
+    background-color: #ff7900 !important;
+}
+.orentext{
+  color:#ff7900!important
+}
+.orenborder{
+  border: 2px solid #ff7900;
 }
