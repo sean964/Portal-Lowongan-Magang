@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 const Home = () => {
   const { data: session, status } = useSession();
-
+  const test = 'test'
   if (status === 'loading') {
     return <>loading...</>;
   }
@@ -17,7 +17,7 @@ const Home = () => {
     return <>belum login</>;
   }
   console.log(session)
-
+  console.log(test)
 
   return (
     <main
