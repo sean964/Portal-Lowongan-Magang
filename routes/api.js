@@ -13,6 +13,7 @@ router.post('/bimbingan', authcontroller.bimbingan);
 router.post('/lowongan', authcontroller.Buatlowongan)
 router.post('/pendaftar', upload.single('cv'), authcontroller.postPendaftar)
 router.post('/pendaftarNoCV', authcontroller.postPendaftarNoCV)
+router.post('/logbook',authcontroller.logBook)
 router.get('/get/mahasiswa', authcontroller.getMahasiswa);
 router.get('/get/mahasiswaStatus', authcontroller.getMahasiswaStatus);
 router.get('/get/dosen', authcontroller.getDosen);

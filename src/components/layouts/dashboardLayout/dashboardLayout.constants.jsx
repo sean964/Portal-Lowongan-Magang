@@ -33,7 +33,7 @@ const MAHASISWA_SIDEBAR = [
   {
     key: 'jurnal',
     label: 'Jurnal Harian',
-    href: '/mahasiswa/jurnal',
+    href: '/mahasiswa/logbook',
     icon: <FaBookOpen />,
   },
 ];

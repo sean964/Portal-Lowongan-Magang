@@ -5,7 +5,7 @@ import { NEXT_PUBLIC_API_URL } from "../../../../environment/env"
 const useDashboardLayoutSidebar = () =>{
 const {data:session} = useSession()
 const [user, setUser] = useState([])
-const [photo, setPhoto] = useState('')
+const [photo, setPhoto] = useState(null)
 const [hover, setHover] = useState(false)
 
 const fetchData = async () =>{
@@ -39,8 +39,6 @@ if(user.length !== 0){
     }
     }
 },[user])
-
-console.log(user)
 
 
 return{

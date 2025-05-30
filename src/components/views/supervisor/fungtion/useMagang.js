@@ -8,6 +8,7 @@ const useMagang = () =>{
 
     const fetchData = async() =>{
         const res = await fetch(`${NEXT_PUBLIC_API_URL}/get/magang?supervisor=${session.user.email}`)
+        if(!res.ok) return
         const json = await res.json()
         setMahasiswa(json.data)
     }
@@ -17,7 +18,7 @@ const useMagang = () =>{
             fetchData()
             const interval = setInterval(() => {
                fetchData() 
-            }, 5000);
+            }, 10000);
             return ()=> clearInterval(interval)
         }
     },[session])

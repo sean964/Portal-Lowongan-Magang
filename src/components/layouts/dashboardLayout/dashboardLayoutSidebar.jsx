@@ -19,7 +19,6 @@ const DashboardLayoutSidebar = ({isOpen, sidebarItems}) => {
     const router = useRouter()
 
 
-
     return(
         <div className={cn("fixed font-semibold -translate-x-full shadowCustom lg:-translate-x-0 lg:relative z-50 flex items-center h-screen w-full max-w-[300px] flex-col justify-between border-r-1 border-default-200 bg-white px-4 py-8 transition-all",
                 {'translate-x-0':isOpen}
@@ -29,7 +28,7 @@ const DashboardLayoutSidebar = ({isOpen, sidebarItems}) => {
                             <div className={cn('transition-all opacity-0 absolute rounded-full items-center justify-center gap-5 flex w-full h-full overflow-hidden back', {'opacity-100': hover})}>
                                 <Link className={cn("oren w-1/3 transition-all -rotate-180 -translate-x-full rounded-full flex items-center justify-center h-1/3",{'translate-x-0 rotate-0':hover})} href={'/changePhoto'}><FaCamera size={30}/></Link>
                             </div>
-                        {photo !== ''?(
+                        {photo !== null?(
                             <Image 
                             src={photo}
                             alt="/logo/defaultPhoto.jpg"
@@ -39,7 +38,7 @@ const DashboardLayoutSidebar = ({isOpen, sidebarItems}) => {
                             />
                         ):(
                             <Image 
-                            src={'/logo/defaultPhoto.jpg'}
+                            src={'/logo/default.jpg'}
                             alt="/logo/defaultPhoto.jpg"
                             width={170}
                             height={170}

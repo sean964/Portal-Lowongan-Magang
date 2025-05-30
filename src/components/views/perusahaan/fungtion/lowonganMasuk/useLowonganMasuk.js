@@ -12,9 +12,11 @@ const fetchData = async () =>{
 }
 
 useEffect(()=>{
-    fetchData()
-    const interval = setInterval(()=>{fetchData()},2000)
-    return ()=> clearInterval(interval)
+    if(supervisor !== undefined){
+        fetchData()
+        const interval = setInterval(()=>{fetchData()},2000)
+        return ()=> clearInterval(interval)
+    }
 },[supervisor])
 
 return{

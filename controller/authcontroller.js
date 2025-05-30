@@ -369,7 +369,7 @@ export default {
     const {kategori, perusahaan, deskripsi, judul, masaMagang, supervisor, dibutuhkan} = req.body
     const [supervisorPhoto] = await db.execute('SELECT photo from supervisor WHERE email = ? AND perusahaan = ?',[supervisor, perusahaan])
     const supervisorData =  supervisorPhoto[0]
-    const photo = supervisorData.photo 
+    const photo = supervisorData.photo
 
     
     const [hasLowongan] = await db.execute(`SELECT * FROM lowongan WHERE supervisor = ?`, [supervisor])
@@ -398,8 +398,12 @@ export default {
       return res.status(401).json({message: 'Pendaftaran telah ada'})
     }
 
-    const [photoMahasiswa] = await db.execute('SELECT photo FROM mahasiswa WHERE nim = ?', [nim])
-    const photo = photoMahasiswa[0]
+    const [bimbingan] = await db.execute('SELECT * FROM bimbingan WHERE nim = ?',[nim])
+    if(bimbingan.length === 0) return res.status(401).json({meessage:'Belum mempunyai dosen pembimbing'})
+
+    const [photoMahasiswa] = await db.execute('SELECT photo, magang FROM mahasiswa WHERE nim = ?', [nim])
+    const photo = photoMahasiswa[0].photo
+    if(photoMahasiswa[0].magang !== null) return res.status(401).json({message:"Telah diterima di suatu lowongan"})
 
     const [supervisors] = await db.execute('SELECT pendaftar FROM lowongan WHERE supervisor = ?', [supervisor])
     const jumlah = supervisors[0].pendaftar + 1
@@ -409,7 +413,7 @@ export default {
       return res.status(401).json({message: 'Format CV harus Pdf'})
     }
 
-    const [result] = await db.execute(`INSERT INTO pendaftar (pendaftar, nim, supervisor, photo, alasan, cv, birth, adress, jurusan, email, status) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,[pendaftar, nim, supervisor,  photo.photo, alasan, buffer, birth, adress, jurusan, email, 'menunggu'])
+    const [result] = await db.execute(`INSERT INTO pendaftar (pendaftar, nim, supervisor, photo, alasan, cv, birth, adress, jurusan, email, status) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,[pendaftar, nim, supervisor,  photo.photo, alasan, buffer, birth, adress, jurusan, email, 'Menunggu'])
 
 
     res.json({message:'berhasil mendaftar lowongan', data:result})
@@ -417,19 +421,24 @@ export default {
 
   async postPendaftarNoCV(req, res){
     const {pendaftar, nim, supervisor, alasan, birth, adress, jurusan, email} = req.body
+    
     const [check] = await db.execute('SELECT * FROM pendaftar WHERE nim = ? AND supervisor = ?',[nim, supervisor])
     if(check.length !== 0){
       return res.status(401).json({message: 'Pendaftaran telah ada'})
     }
 
-    const [photoMahasiswa] = await db.execute('SELECT photo FROM mahasiswa WHERE nim = ?', [nim])
-    const photo = photoMahasiswa[0]
+    const [bimbingan] = await db.execute('SELECT * FROM bimbingan WHERE nim = ?',[nim])
+    if(bimbingan.length === 0) return res.status(401).json({meessage:'Belum mempunyai dosen pembimbing'})
+
+    const [photoMahasiswa] = await db.execute('SELECT photo, magang FROM mahasiswa WHERE nim = ?', [nim])
+    const photo = photoMahasiswa[0].photo
+    if(photoMahasiswa[0].magang !== null) return res.status(401).json({message:"Telah diterima di suatu lowongan"})
 
     const [supervisors] = await db.execute('SELECT pendaftar FROM lowongan WHERE supervisor = ?', [supervisor])
     const jumlah = supervisors[0].pendaftar + 1
     await db.execute('UPDATE lowongan SET pendaftar = ? WHERE supervisor = ?', [jumlah, supervisor])
 
-    const [result] = await db.execute(`INSERT INTO pendaftar (pendaftar, nim, supervisor, photo, alasan, birth, adress, jurusan, email, status) VALUES (?,?,?,?,?,?,?,?,?,?)`,[pendaftar, nim, supervisor,  photo.photo, alasan, birth, adress, jurusan, email, 'Menunggu...' ])
+    const [result] = await db.execute(`INSERT INTO pendaftar (pendaftar, nim, supervisor, photo, alasan, birth, adress, jurusan, email, status) VALUES (?,?,?,?,?,?,?,?,?,?)`,[pendaftar, nim, supervisor, photo.photo, alasan, birth, adress, jurusan, email, 'Menunggu'])
 
 
     res.json({message:'berhasil mendaftar lowongan', data:result})
@@ -482,7 +491,7 @@ export default {
     if(nilaiDosen === undefined){
       if(check[0].nilaiSupervisor !== null) return res.status(401).json({message:'Telah memasukkan nilai'})
       if(nilaiSupervisor > 100) return res.status(401).json({message:'Nilai lebih dari 100'})
-      if(nilaiSupervisor <= 0) return res.status(401).json({message:'Nilai kurang dari 0'})
+      if(nilaiSupervisor <= 0) return res.status(401).json({message:'Nilai kurang dari 1'})
       if(nilaiSupervisor === null) return res.status(401).json({message:'Masukkan Nilai'})
       const [result] = await db.execute('UPDATE penilaian SET nilaiSupervisor = ? WHERE nim = ?',[nilaiSupervisor, nim])
       if(result.length === 0) return res.status(401).json({message:'Gagal memberi nilai'})
@@ -498,6 +507,19 @@ export default {
       if(result.length === 0) return res.status(401).json({message:'Gagal memberi nilai'})
       res.status(200).json({message:'Berhasil memberikan nilai'})
     }
+  },
+
+  async logBook(req,res){
+    const {nim, judul, nip, date, deskripsi} = req.body
+    const [check] = await db.execute('SELECT * FROM logbook WHERE nim = ? AND nip = ? AND date = ?',[nim, nip, date])
+    if(check.length !== 0) return res.status(401).json({message:'Telah membuat jurnal harian di tanggal yang sama'})
+    
+    const [check2] = await db.execute('SELECT magang FROM mahasiswa where nim = ?',[nim])
+    if(check2[0].magang === null) return res.status(401).json({message:'Belum magang'})
+
+    const [response] = await db.execute(`INSERT INTO logbook (nim, nip, date, deskripsi, judul) VALUES (?,?,?,?,?)`,[nim, nip, date, deskripsi, judul])
+    if(response.length === 0) return res.status(401).json({message:'Gagal membuat Logbook'})
+    res.status(200).json({message:"Berhasil membuat jurnal harian"})
   },
 
   // get
@@ -518,8 +540,16 @@ export default {
   },
 
   async getBimbingan(req, res){
-    const [result] = await db.execute('SELECT * FROM bimbingan')
-    res.json({bimbingan: result})
+    const {nim} = req.query
+    if(nim !== undefined){
+    console.log('check nim',nim)
+    const [result] = await db.execute('SELECT * FROM bimbingan WHERE nim = ?',[nim])
+    return res.json({bimbingan: result[0]})
+    }
+    if(nim === undefined){
+      const [result] = await db.execute('SELECT * FROM bimbingan')
+      return res.json({bimbingan: result})
+    }
   },
 
   async getProfile(req, res) {
@@ -629,7 +659,7 @@ export default {
   async getPendaftar(req, res){
     const {supervisor, nim} = req.query
     if(nim === undefined){
-      const [result] = await db.execute('SELECT * FROM pendaftar WHERE supervisor = ? AND status = ?',[supervisor, 'Menunggu...']);
+      const [result] = await db.execute('SELECT * FROM pendaftar WHERE supervisor = ? AND status = ?',[supervisor, 'Menunggu']);
       res.json({ data: result })
     }else{
       const [result] = await db.execute('SELECT * FROM pendaftar WHERE supervisor = ? AND nim = ?',[supervisor, nim])
@@ -711,7 +741,7 @@ export default {
     const {supervisor, nim} = req.query
     if(nim === undefined){
       const [result] = await db.execute('SELECT name, nim, jurusan, photo FROM mahasiswa WHERE supervisor = ?',[supervisor])
-      if(result.length===0) return res.status(401).json({message:'Mahasiswa Magang tidak ada'})
+      if(result.length===0) return res.status(20).json({message:'Mahasiswa Magang tidak ada'})
       res.status(200).json({data:result})
     }
     if(supervisor === undefined){

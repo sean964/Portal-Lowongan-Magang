@@ -60,7 +60,7 @@ return(
                         {pdf !== null ? (<Button className="font-bold" color="primary" size="lg" onPress={handleClick} >{!click ? 'Lihat CV' : 'Tutup CV'}</Button>              
                         ): null}
 
-                        {session.user.role === 'supervisor' ? mahasiswa === null ? status === 'Menunggu...' ? (
+                        {session.user.role === 'supervisor' ? mahasiswa === null ? status === 'Menunggu' ? (
                             <Button onClick={handleTerima} color="success" size="lg" className="font-bold">Terima</Button>
                         ): null : null : null}
                         
