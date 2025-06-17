@@ -7,7 +7,10 @@ router.put('/upPhoto', upload.single('photo'), authcontroller.upPhoto);
 router.put('/terimaPendaftar', authcontroller.terimaPendaftar)
 router.put('/tolakPendaftar', authcontroller.tolakPendaftar)
 router.put('/penilaian', authcontroller.penilaian)
+router.put('/changePass', authcontroller.changePass)
+router.put('/komentar', authcontroller.komentarLogbook)
 router.post('/auth/register', authcontroller.register);
+router.post('/auth/registerExcel',upload.single('file'), authcontroller.registerWithExcel);
 router.post('/auth/login', authcontroller.login);
 router.post('/bimbingan', authcontroller.bimbingan);
 router.post('/lowongan', authcontroller.Buatlowongan)
@@ -26,6 +29,9 @@ router.get('/get/pendaftar', authcontroller.getPendaftar)
 router.get('/get/lowonganMahasiswa', authcontroller.getLowonganMahasiswa)
 router.get('/get/CV', authcontroller.getCV)
 router.get('/get/magang', authcontroller.getMagang)
+router.get('/get/logbook', authcontroller.getLogbook)
+router.get('/get/pagination', authcontroller.getPagination)
+router.get('/get/penilaian', authcontroller.getPenilaian)
 router.delete('/delete/bimbingan', authcontroller.deleteBimbingan)
 router.delete('/delete/lowongan', authcontroller.deleteLowongan)
 router.delete('/delete/pendaftar', authcontroller.deletePendaftar)

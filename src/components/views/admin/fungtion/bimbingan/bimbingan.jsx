@@ -18,7 +18,7 @@ const Bimbingan = () =>{
   } = useBimbingan()
 
 return(
-    <div className="flex h-screen w-full flex-col px-20 lg:px-60 items-center justify-center">
+    <div className="flex h-fit w-full flex-col px-20 lg:px-60 items-center justify-center">
       <div className="w-full">
         <Card className="m-10">
           <CardBody className="flex w-full gap-1 flex-col items-center text-center justify-center px-10 py-8">
@@ -30,7 +30,7 @@ return(
               alt=""
             />
             <h2 className="mb-2 text-2xl text-center font-bold text-primary-500">
-              Membuat Relasi Bimbingan
+              Penetapan Dosen Pembimbing
             </h2>
             
             <form
@@ -89,7 +89,7 @@ return(
                 </div>
 
               <Button color="primary" size="lg" type="submit">
-                {isPending ? <Spinner color="white" size="sm" /> : 'Register'}
+                {isPending ? <Spinner color="white" size="sm" /> : 'Buat'}
               </Button>
             </form>
           </CardBody>

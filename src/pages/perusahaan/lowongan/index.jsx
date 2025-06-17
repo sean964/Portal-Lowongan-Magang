@@ -2,16 +2,15 @@ import PageHaead from "@/components/commons/pageHead"
 import BuatLowongan from "@/components/views/perusahaan/fungtion/buatLowongan/buat"
 import { getSession } from "next-auth/react"
 import { NEXT_PUBLIC_API_URL } from "../../../../environment/env"
-import BackButton from "@/components/commons/backButton"
+import DashboardLayout from "@/components/layouts/dashboardLayout/dashboardLayout"
 
 const BuatLowonganPage = ({supervisor}) =>{
     console.log(supervisor)
     return(
-<>
+<DashboardLayout title={'Perusahaan | Buat Lowongan'} type={'perusahaan'}>
 <PageHaead title={'Perusahaan | Buat Lowongan'}/>
-<BackButton />
 <BuatLowongan supervisor={supervisor} />
-</>
+</DashboardLayout>
     )
 }
 

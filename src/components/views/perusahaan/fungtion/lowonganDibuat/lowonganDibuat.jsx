@@ -5,11 +5,9 @@ import useLowonganDibuat from "./useLownganDibuat"
 const LowonganDibuat = ({user}) =>{
 const {lowongan} = useLowonganDibuat(user)
 return(
-    <div className="w-full min-h-screen flex flex-col justify-center items-center p-10 lg:px-20 lg:py-10">
-        <Card className="w-full h-screen">
-             <CardBody className="w-full flex flex-col p-10">
+    <div className="w-full h-fit flex flex-col justify-center items-center">
                 <p className="lg:text-3xl text-2xl font-bold mb-5">Lowongan yang telah dibuat:</p>
-                <div className="w-full flex flex-col lg:grid lg:grid-cols-3 gap-5 text-medium font-semibold">
+                <div className="lg:w-full w-3/5 flex flex-col lg:grid lg:grid-cols-3 gap-5 text-medium font-semibold">
         {lowongan?.map(({photo, supervisor, judul, diterima, dibutuhkan})=>{
             
             if(photo !==null){
@@ -48,8 +46,6 @@ return(
             }
         })}
                 </div>
-             </CardBody>
-        </Card>
     </div>
     )
 }

@@ -29,9 +29,45 @@
 .oren{
     background-color: #ff7900 !important;
 }
+
+.oren:active{
+  transform: scale(.65)!important;
+}
 .orentext{
   color:#ff7900!important
 }
 .orenborder{
   border: 2px solid #ff7900;
+}
+
+.kegelapan{
+box-shadow: 0px 0px 0px 10000px rgba(0,0,0,0.5)!important;
+-webkit-box-shadow: 0px 0px 0px 10000px rgba(0,0,0,0.5)!important;
+-moz-box-shadow: 0px 0px 0px 10000px rgba(0,0,0,0.5)!important;
+}
+
+.navbar{
+  height: 10vh; 
+  box-shadow: 5px 0px 15px 0px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 5px 0px 15px 0px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 5px 0px 15px 0px rgba(0, 0, 0, 0.5);
+}
+
+.bg{
+  background-image:linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(/logo/bg.jpg);
+  background-size: cover;     /* agar gambar menutupi seluruh layar */
+      background-position: center; /* posisi tengah */
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+}
+
+.dashBg{
+  background-image:linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url(/logo/logoIth.png);
+  background-size: contain;     /* agar gambar menutupi seluruh layar */
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+}
+
+.text-bayang{
+  text-shadow: 0px 3px 4px rgba(0,0,0,0.4);
 }

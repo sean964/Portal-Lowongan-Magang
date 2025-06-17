@@ -13,9 +13,9 @@ import { Navbar, NavbarMenuToggle } from '@heroui/react';
 const DashboardLayout = ({ title, type, children }) => {
   const [open, setOpen] = useState(false);
    return (
-      <>
+      <div>
         <PageHaead title={title} />
-        <div className="max-w-screen-3xl 3xl:container flex">
+        <div key={''} className="max-w-screen-3xl 3xl:container flex">
           {type === 'perusahaan' ? <DashboardLayoutSidebar
             sidebarItems={PERUSAHAAN_SIDEBAR}
             isOpen={open}
@@ -37,7 +37,7 @@ const DashboardLayout = ({ title, type, children }) => {
             isOpen={open}
           /> : null}
 
-          <div className="w-full overflow-y">
+          <div className="lg:w-[65.5rem] lg:absolute lg:left-[300px] w-full">
             <Navbar
               className="flex justify-between bg-transparent w-full border-b-2 border-b-black px-8 py-2"
               isBlurred={false}
@@ -51,12 +51,12 @@ const DashboardLayout = ({ title, type, children }) => {
                 className="lg:hidden"
               />
             </Navbar>
-            <div className='w-full h-screen overflow-y-auto p-8'>
+            <div className='w-full h-[34.9rem] overflow-y-auto p-8 dashBg lg:bg-[30rem]'>
             {children}
             </div>
           </div>
         </div>
-      </>
+      </div>
     );
 };
 export default DashboardLayout;

@@ -24,7 +24,7 @@ useEffect(()=>{
 
         return ()=> clearInterval(interval)
     }
-})
+},[session])
 
 return{
     supervisor

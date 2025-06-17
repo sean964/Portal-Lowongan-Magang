@@ -17,24 +17,27 @@ const useLogbook = () =>{
 const {data: session} = useSession()
 const [nim, setNim] = useState(null)
 const [nip, setNip] = useState(null)
+const [mahasiswa, setMahasiswa] = useState(null)
 const {control, formState:{errors}, handleSubmit} = useForm({resolver:yupResolver(logBookSchema)})
 
 
 const fetchData = async () =>{
     const res = await fetch(`${NEXT_PUBLIC_API_URL}/get/profile?role=${session.user.role}&email=${session.user.email}`)
     const datas = await res.json()
+    setMahasiswa(datas.user.nim)
     const res2= await fetch(`${NEXT_PUBLIC_API_URL}/get/bimbingan?nim=${datas.user.nim}`)
     const json = await res2.json()
-    setNim(json.bimbingan.nim)
-    setNip(json.bimbingan.nip)
+    setNim(json.bimbingan[0].nim)
+    setNip(json.bimbingan[0].nip)
 }
-
 
 useEffect(()=>{
     if(session !== undefined){
         fetchData()
     }
 },[session])
+
+console.log(mahasiswa, nim)
 
 const logbookSubmit = async ({judul, date, deskripsi}) =>{
     const dateFormatted = date.toISOString().split('T')[0];

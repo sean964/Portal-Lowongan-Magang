@@ -1,7 +1,7 @@
 import { CiGrid41 } from 'react-icons/ci';
 import { IoDocumentTextSharp, IoPeople, IoGrid } from 'react-icons/io5';
 import { GrStatusGood } from 'react-icons/gr';
-import { FaBookOpen, FaAddressBook } from 'react-icons/fa';
+import { FaBookOpen, FaAddressBook, FaUserCheck } from 'react-icons/fa';
 import { BsEraserFill, BsFillMortarboardFill, BsMortarboardFill } from 'react-icons/bs';
 import { FaMarker } from 'react-icons/fa6';
 import { HiBadgeCheck } from "react-icons/hi";
@@ -25,17 +25,17 @@ const MAHASISWA_SIDEBAR = [
     icon: <IoDocumentTextSharp />,
   },
   {
-    key: 'statusLowongan',
-    label: 'Status Lowongan',
-    href: '/mahasiswa/lowongan/status',
-    icon: <GrStatusGood className="rounded-full bg-black text-white" />,
-  },
-  {
     key: 'jurnal',
     label: 'Jurnal Harian',
     href: '/mahasiswa/logbook',
     icon: <FaBookOpen />,
   },
+  {
+    key:'nilai',
+    label:'Lihat Nilai',
+    href:'/mahasiswa/nilai',
+    icon: <FaUserCheck />
+  }
 ];
 
 const DOSEN_SIDEBAR = [
@@ -44,12 +44,6 @@ const DOSEN_SIDEBAR = [
     label: 'Dashboard',
     href: '/dosen',
     icon: <IoGrid />,
-  },
-  {
-    key: 'mahasiswa',
-    label: 'Mahasiswa Bimbingan',
-    href: '/dosen/bimbingan',
-    icon: <BsFillMortarboardFill />,
   },
   {
     key: 'jurnal',

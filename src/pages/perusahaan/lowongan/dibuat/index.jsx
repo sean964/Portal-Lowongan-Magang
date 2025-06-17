@@ -1,5 +1,6 @@
 import BackButton from "@/components/commons/backButton"
 import PageHaead from "@/components/commons/pageHead"
+import DashboardLayout from "@/components/layouts/dashboardLayout/dashboardLayout"
 import LowonganDibuat from "@/components/views/perusahaan/fungtion/lowonganDibuat/lowonganDibuat"
 
 import { getSession } from "next-auth/react"
@@ -7,11 +8,10 @@ import { getSession } from "next-auth/react"
 const LowonganDibuatPage = ({user}) =>{
 
 return(
-    <>
+    <DashboardLayout type={'perusahaan'} title={'Perusahaan | Lowongan'}>
     <PageHaead title={'Perusahaan | Lowongan'} />
-    <BackButton />
     <LowonganDibuat user={user} />
-    </>
+    </DashboardLayout>
 )
 }
 

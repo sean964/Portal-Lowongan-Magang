@@ -10,7 +10,7 @@ const daftarSchema = yup.object().shape({
     alasan: yup.string().required('Masukkan alasan anda'),
 })
 
-const useDaftar = (name, nim, supervisor, birth, adress, jurusan, email) =>{
+const useDaftar = (name, nim, supervisor, angkatan, adress, jurusan, email) =>{
 const {control, formState:{errors}, setError, handleSubmit} = useForm({resolver:yupResolver(daftarSchema)})
 const [cv, setCv] = useState(null)
 
@@ -29,7 +29,7 @@ const daftarService = async ({alasan}) =>{
     formData.append('pendaftar', name)
     formData.append('nim', nim)
     formData.append('supervisor', supervisor)
-    formData.append('birth', birth)
+    formData.append('angkatan', angkatan)
     formData.append('adress', adress)
     formData.append('jurusan', jurusan)
     formData.append('email', email)
@@ -40,7 +40,7 @@ const daftarService = async ({alasan}) =>{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-            pendaftar:name, nim, supervisor, birth, adress, jurusan, email, alasan: formattedText
+            pendaftar:name, nim, supervisor, angkatan, adress, jurusan, email, alasan: formattedText
         })
         })
         const result1 = await res1.json()
@@ -68,7 +68,6 @@ onSuccess:()=>{
 })
 
 const handleDaftar = ({alasan})=> mutate({alasan})
-console.log(name, nim, supervisor, birth, adress, jurusan, email)
 return{
     handleDaftar,
     ispending,

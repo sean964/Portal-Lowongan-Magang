@@ -4,17 +4,18 @@ import { useRouter } from "next/router"
 import PageHaead from "@/components/commons/pageHead"
 import BackButton from "@/components/commons/backButton"
 import DaftarLowongan from "@/components/views/mahasiswa/fungtion/daftar/daftar"
+import DashboardLayout from "@/components/layouts/dashboardLayout/dashboardLayout"
 
 const DaftarPage = ({data, email}) =>{
 const router = useRouter()
 const {supervisor} = router.query
 
 return(
-    <>
+    <DashboardLayout type={'mahasiswa'} title={`Daftar | Lowongan ${supervisor}`}>
     <PageHaead title={`Daftar | Lowongan ${supervisor}`} />
     <BackButton />
     <DaftarLowongan data={data} supervisor={supervisor} email={email}/>
-    </>
+    </DashboardLayout>
 )
 }
 

@@ -26,7 +26,9 @@ const UsePhoto = () => {
       setPreview(null);
       return;
     }
-    if (file && file.type.startsWith('image/')) {
+
+      
+      if (file && file.type.startsWith('image/')) {
       setPhoto(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -38,8 +40,11 @@ const UsePhoto = () => {
     setPreview(objectUrl);
   };
 
+  console.log('check',photo?.size)
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const MAX_FILE_SIZE = 120000;
+    if(photo.size > MAX_FILE_SIZE) return toast.error('Ukuran foto Lebih Dari 1 MB')
     const formData = new FormData();
     formData.append('photo', photo);
     formData.append('email', email)

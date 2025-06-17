@@ -1,6 +1,7 @@
 import multer from 'multer';
 import db from '../utils/database.js';
 import { encrypt } from '../utils/encrypt.js';
+import xlsx from 'xlsx'
 
 export default {
   // post
@@ -11,7 +12,7 @@ export default {
       const {
         name,
         role,
-        birthFormatted,
+        angkatan,
         gender,
         adress,
         jurusan,
@@ -62,10 +63,10 @@ export default {
       }
 
       const encryptPass = encrypt(password);
-      const sql = `INSERT INTO \`mahasiswa\` (name, birth, gender, jurusan, email, nim, adress, role, password) VALUES (?,?,?,?,?,?,?,?,?)`;
+      const sql = `INSERT INTO \`mahasiswa\` (name, angkatan, gender, jurusan, email, nim, adress, role, password) VALUES (?,?,?,?,?,?,?,?,?)`;
       const [result] = await db.query(sql, [
         name,
-        birthFormatted,
+        angkatan,
         gender,
         jurusan,
         email,
@@ -321,6 +322,21 @@ export default {
       return res.status(400).json({ error: 'Missing email in request body' });
     }
 
+    if(role==='mahasiswa'|| role==="dosen"||role==="supervisor"){
+      if(role === 'mahasiswa'){
+        const [mahasiswa] = await db.execute('SELECT nim FROM mahasiswa WHERE email = ?',[email])
+        await db.execute('UPDATE bimbingan SET mahasiswaPhoto = ? WHERE nim = ?',[buffer, mahasiswa[0].nim])
+        await db.execute('UPDATE pendaftar SET photo = ? WHERE nim = ?',[buffer, mahasiswa[0].nim])
+      }
+      if(role === 'dosen'){
+        const [dosen] = await db.execute('SELECT nip FROM dosen WHERE email = ?',[email])
+        await db.execute('UPDATE bimbingan SET dosenPhoto = ? WHERE nip = ?',[buffer, dosen[0].nip])
+      }
+      if(role=== 'supervisor'){
+        await db.execute('UPDATE lowongan SET photo = ? WHERE supervisor = ?',[buffer,email])
+      }
+    }
+
     const sql = `UPDATE ${role} SET photo = ? WHERE email = ?`
     const [result] = await db.execute(sql, [buffer, email])
     if(result.length === 0){
@@ -328,6 +344,18 @@ export default {
     }
 
     return res.status(200).json({message:'sukses mengganti foto', result})
+
+  },
+
+  async changePass(req,res){
+    const {password, newPassword, role, email} = req.body
+    const hashPass = encrypt(password)
+    const hashPassnew = encrypt(newPassword)
+    const [check] = await db.execute(`SELECT password FROM ${role} WHERE email = ?`, [email])
+    if(check[0].password !== hashPass) return res.status(403).json({message:'Password lama tidak sama'}) 
+    const [result] = await db.execute(`UPDATE ${role} SET password = ? WHERE email = ?`,[hashPassnew, email])
+    if(result.length === 0 ) return res.status(403).json({message:'Gagal mengganti password'})
+    res.status(200).json({message:'Berhasil mengganti Password'})
 
   },
 
@@ -391,7 +419,7 @@ export default {
   },
 
   async postPendaftar(req, res){
-    const {pendaftar, nim, supervisor, alasan, birth, adress, jurusan, email} = req.body
+    const {pendaftar, nim, supervisor, alasan, angkatan, adress, jurusan, email} = req.body
     
     const [check] = await db.execute('SELECT * FROM pendaftar WHERE nim = ? AND supervisor = ?',[nim, supervisor])
     if(check.length !== 0){
@@ -399,13 +427,13 @@ export default {
     }
 
     const [bimbingan] = await db.execute('SELECT * FROM bimbingan WHERE nim = ?',[nim])
-    if(bimbingan.length === 0) return res.status(401).json({meessage:'Belum mempunyai dosen pembimbing'})
+    if(bimbingan.length === 0) return res.status(401).json({message:'Belum mempunyai dosen pembimbing'})
 
-    const [photoMahasiswa] = await db.execute('SELECT photo, magang FROM mahasiswa WHERE nim = ?', [nim])
+    const [photoMahasiswa] = await db.execute('SELECT photo, perusahaan FROM mahasiswa WHERE nim = ?', [nim])
     const photo = photoMahasiswa[0].photo
-    if(photoMahasiswa[0].magang !== null) return res.status(401).json({message:"Telah diterima di suatu lowongan"})
+    if(photoMahasiswa[0].perusahaan !== null) return res.status(401).json({message:"Telah diterima di suatu lowongan"})
 
-    const [supervisors] = await db.execute('SELECT pendaftar FROM lowongan WHERE supervisor = ?', [supervisor])
+    const [supervisors] = await db.execute('SELECT pendaftar, judul, perusahaan FROM lowongan WHERE supervisor = ?', [supervisor])
     const jumlah = supervisors[0].pendaftar + 1
     await db.execute('UPDATE lowongan SET pendaftar = ? WHERE supervisor = ?', [jumlah, supervisor])
     const {buffer, mimetype} = req.file
@@ -413,14 +441,14 @@ export default {
       return res.status(401).json({message: 'Format CV harus Pdf'})
     }
 
-    const [result] = await db.execute(`INSERT INTO pendaftar (pendaftar, nim, supervisor, photo, alasan, cv, birth, adress, jurusan, email, status) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,[pendaftar, nim, supervisor,  photo.photo, alasan, buffer, birth, adress, jurusan, email, 'Menunggu'])
+    const [result] = await db.execute(`INSERT INTO pendaftar (pendaftar, nim, perusahaan, judul, supervisor, photo, alasan, cv, angkatan, adress, jurusan, email, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,[pendaftar, nim, supervisors[0].perusahaan, supervisors[0].judul, supervisor,  photo, alasan, buffer, angkatan, adress, jurusan, email, 'Menunggu'])
 
 
     res.json({message:'berhasil mendaftar lowongan', data:result})
   },
 
   async postPendaftarNoCV(req, res){
-    const {pendaftar, nim, supervisor, alasan, birth, adress, jurusan, email} = req.body
+    const {pendaftar, nim, supervisor, alasan, angkatan, adress, jurusan, email} = req.body
     
     const [check] = await db.execute('SELECT * FROM pendaftar WHERE nim = ? AND supervisor = ?',[nim, supervisor])
     if(check.length !== 0){
@@ -428,17 +456,17 @@ export default {
     }
 
     const [bimbingan] = await db.execute('SELECT * FROM bimbingan WHERE nim = ?',[nim])
-    if(bimbingan.length === 0) return res.status(401).json({meessage:'Belum mempunyai dosen pembimbing'})
+    if(bimbingan.length === 0) return res.status(401).json({message:'Belum mempunyai dosen pembimbing'})
 
-    const [photoMahasiswa] = await db.execute('SELECT photo, magang FROM mahasiswa WHERE nim = ?', [nim])
+    const [photoMahasiswa] = await db.execute('SELECT photo, perusahaan FROM mahasiswa WHERE nim = ?', [nim])
     const photo = photoMahasiswa[0].photo
-    if(photoMahasiswa[0].magang !== null) return res.status(401).json({message:"Telah diterima di suatu lowongan"})
+    if(photoMahasiswa[0].perusahaan !== null) return res.status(401).json({message:"Telah diterima di suatu lowongan"})
 
-    const [supervisors] = await db.execute('SELECT pendaftar FROM lowongan WHERE supervisor = ?', [supervisor])
+    const [supervisors] = await db.execute('SELECT pendaftar, perusahaan, judul FROM lowongan WHERE supervisor = ?', [supervisor])
     const jumlah = supervisors[0].pendaftar + 1
     await db.execute('UPDATE lowongan SET pendaftar = ? WHERE supervisor = ?', [jumlah, supervisor])
 
-    const [result] = await db.execute(`INSERT INTO pendaftar (pendaftar, nim, supervisor, photo, alasan, birth, adress, jurusan, email, status) VALUES (?,?,?,?,?,?,?,?,?,?)`,[pendaftar, nim, supervisor, photo.photo, alasan, birth, adress, jurusan, email, 'Menunggu'])
+    const [result] = await db.execute(`INSERT INTO pendaftar (pendaftar, nim, perusahaan, judul, supervisor, photo, alasan, angkatan, adress, jurusan, email, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,[pendaftar, nim, supervisors[0].perusahaan, supervisors[0].judul, supervisor, photo, alasan, angkatan, adress, jurusan, email, 'Menunggu'])
 
 
     res.json({message:'berhasil mendaftar lowongan', data:result})
@@ -455,8 +483,8 @@ export default {
     const [bimbingan] = await db.execute('UPDATE bimbingan SET status = ? WHERE nim = ?',['Magang', nim])
     if(bimbingan.length === 0) return res.status(401).json({message:'gagal mengubah status bimbingan'})
     
-      // ubah status magang dan supervisor di mahasiswa
-    const [mahasiswa] = await db.execute('UPDATE mahasiswa SET magang = ?, supervisor = ? WHERE nim = ?',[perusahaanName, supervisorEmail, nim])
+      // ubah status perusahaan dan supervisor di mahasiswa
+    const [mahasiswa] = await db.execute('UPDATE mahasiswa SET perusahaan = ?, supervisor = ? WHERE nim = ?',[perusahaanName, supervisorEmail, nim])
     if(mahasiswa.length === 0) return res.status(401).json({message:'gagal mengubah status mahasiswa'})
     
       // ubah status magang di pendaftar
@@ -493,7 +521,8 @@ export default {
       if(nilaiSupervisor > 100) return res.status(401).json({message:'Nilai lebih dari 100'})
       if(nilaiSupervisor <= 0) return res.status(401).json({message:'Nilai kurang dari 1'})
       if(nilaiSupervisor === null) return res.status(401).json({message:'Masukkan Nilai'})
-      const [result] = await db.execute('UPDATE penilaian SET nilaiSupervisor = ? WHERE nim = ?',[nilaiSupervisor, nim])
+      const nilaiTotal = nilaiSupervisor/2 + check[0].nilaiDosen/2 
+      const [result] = await db.execute('UPDATE penilaian SET nilaiSupervisor = ?, nilaiTotal = ? WHERE nim = ?',[nilaiSupervisor, nilaiTotal,nim])
       if(result.length === 0) return res.status(401).json({message:'Gagal memberi nilai'})
       res.status(200).json({message:'Berhasil memberikan nilai'})
     }
@@ -503,7 +532,9 @@ export default {
       if(nilaiDosen > 100) return res.status(401).json({message:'Nilai lebih dari 100'})
       if(nilaiDosen <= 0) return res.status(401).json({message:'Nilai kurang dari 0'})
       if(nilaiDosen === null) return res.status(401).json({message:'Masukkan nilai'})
-      const [result] = await db.execute('UPDATE penilaian SET nilaiDosen = ? WHERE nim = ?',[nilaiDosen, nim])
+        
+      const nilaiTotal = check[0].nilaiSupervisor /2 + nilaiDosen /2 
+      const [result] = await db.execute('UPDATE penilaian SET nilaiDosen = ?, nilaiTotal = ? WHERE nim = ?',[nilaiDosen, nilaiTotal, nim])
       if(result.length === 0) return res.status(401).json({message:'Gagal memberi nilai'})
       res.status(200).json({message:'Berhasil memberikan nilai'})
     }
@@ -511,15 +542,51 @@ export default {
 
   async logBook(req,res){
     const {nim, judul, nip, date, deskripsi} = req.body
+    console.log(nim, judul, nip, date, deskripsi)
     const [check] = await db.execute('SELECT * FROM logbook WHERE nim = ? AND nip = ? AND date = ?',[nim, nip, date])
     if(check.length !== 0) return res.status(401).json({message:'Telah membuat jurnal harian di tanggal yang sama'})
     
-    const [check2] = await db.execute('SELECT magang FROM mahasiswa where nim = ?',[nim])
-    if(check2[0].magang === null) return res.status(401).json({message:'Belum magang'})
+    const [check2] = await db.execute('SELECT perusahaan FROM mahasiswa where nim = ?',[nim])
+    if(check2[0].perusahaan === null) return res.status(401).json({message:'Belum magang'})
 
     const [response] = await db.execute(`INSERT INTO logbook (nim, nip, date, deskripsi, judul) VALUES (?,?,?,?,?)`,[nim, nip, date, deskripsi, judul])
     if(response.length === 0) return res.status(401).json({message:'Gagal membuat Logbook'})
     res.status(200).json({message:"Berhasil membuat jurnal harian"})
+  },
+
+  async registerWithExcel(req,res){
+    const workbook = xlsx.read(req.file.buffer);
+    const sheetName = workbook.SheetNames[0];
+    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    // Masukkan data ke MySQL
+    for (const row of data){
+      if(row.email===undefined||row.nim===undefined||row.name===undefined||row.angkatan===undefined||row.password===undefined||row.adress===undefined||row.gender===undefined||row.jurusan===undefined) return res.status(403).json({message:"Format excel salah"})
+        
+        const pass = `${row.password}`
+        const formattedPass = encrypt(pass)
+        const [isCheckNim] = await db.execute(`SELECT * FROM mahasiswa WHERE nim = ?`,[row.nim])
+        const [checkPenilaian] = await db.execute('SELECT * FROM penilaian WHERE nim = ?',[row.nim])
+        
+        if(row.angkatan < 2019) return res.status(401).json({message:`Tahun angkatan pada ${row.name} dibawah 2019`})  
+        if(isCheckNim.length !== 0) return res.status(401).json({message:`Mahasiswa ${row.name} telah ada`})
+        if(checkPenilaian.length !== 0) return res.status(401).json({message:`Mahasiswa ${row.name} telah ada`})
+
+          await db.execute('INSERT INTO penilaian (nim) values (?)',[row.nim])
+          const query = 'INSERT INTO mahasiswa (name, nim, email, adress, password, angkatan, gender, jurusan, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  
+            await db.execute(query, [row.name, row.nim, row.email, row.adress, formattedPass, row.angkatan, row.gender, row.jurusan, 'mahasiswa'])
+        
+            res.json({message:'Data berhasil diunggah!'})
+        };
+        
+  },
+
+  async komentarLogbook(req,res){
+    const {komentar, id} = req.body
+
+    const [result] = await db.execute('UPDATE logbook SET komentar = ? WHERE id = ?',[komentar, id])
+    if(result.length === 0) return res.status(401).json({message:'Gagal memberi komentar'}) 
+    res.status(200).json({message:'Berhasil memberi komentar'})
   },
 
   // get
@@ -530,8 +597,8 @@ export default {
 
   async getMahasiswaStatus(req,res){
     const {nim} = req.query
-    const [result] = await db.execute('SELECT magang FROM mahasiswa WHERE nim = ?',[nim]);
-    res.json({data: result[0].magang });
+    const [result] = await db.execute('SELECT perusahaan FROM mahasiswa WHERE nim = ?',[nim]);
+    res.json({data: result[0].perusahaan });
   },
 
   async getDosen(req, res) {
@@ -540,14 +607,28 @@ export default {
   },
 
   async getBimbingan(req, res){
-    const {nim} = req.query
-    if(nim !== undefined){
-    console.log('check nim',nim)
-    const [result] = await db.execute('SELECT * FROM bimbingan WHERE nim = ?',[nim])
-    return res.json({bimbingan: result[0]})
-    }
-    if(nim === undefined){
+    const {nim, nip, status} = req.query
+
+    if(nim === undefined && nip === undefined && status === undefined){
       const [result] = await db.execute('SELECT * FROM bimbingan')
+      if(result.length === 0) return res.json(null)
+      return res.json({bimbingan: result})
+    }
+
+    if(nip === undefined && status === undefined && nim !== undefined){
+    const [result] = await db.execute('SELECT * FROM bimbingan WHERE nim = ?',[nim])
+    if(result.length === 0) return res.json(null)
+    return res.json({bimbingan: result})
+    }
+
+    if(nim === undefined && status === undefined && nip !== undefined){
+      const [result] = await db.execute('SELECT * FROM bimbingan WHERE nip = ?',[nip])
+      if(result.length === 0) return res.json(null)
+      return res.json({bimbingan: result})
+    }
+    if(nim === undefined && nip !== undefined && status !== undefined){
+      const [result] = await db.execute('SELECT * FROM bimbingan WHERE nip = ? AND status = ?',[nip, status])
+      if(result.length === 0) return res.json(null)
       return res.json({bimbingan: result})
     }
   },
@@ -563,18 +644,17 @@ export default {
       const response = {
         user: {
           name: data.name,
-          birth: data.birth,
+          angkatan: data.angkatan,
           gender: data.gender,
           jurusan: data.jurusan,
           adress: data.adress,
           nim: data.nim,
           lowongan:data.idLowongan,
           photo:data.photo,
-          magang:data.magang,
+          perusahaan:data.perusahaan,
           supervisor:data.supervisor
         }
       };
-
       res.status(200).json(response);
     }
     // dosen
@@ -628,19 +708,29 @@ export default {
       res.status(200).json(response);
     }
 
-    res.status(401).json({message:"user not found"})
+    res.status(401).json(null)
 
   },
 
   async getPerusahaan(req, res) {
+    const {name} = req.query
+    if(name !== undefined){
+    const [result] = await db.execute('SELECT * FROM perusahaan WHERE name = ?',[name]);
+    return res.json({ perusahaan: result });
+    }
     const [result] = await db.execute('SELECT name FROM perusahaan');
     res.json({ perusahaan: result });
 
   },
 
   async getSupervisor(req, res){
-    const {perusahaan} = req.query
-    const [result] = await db.execute('SELECT name, email FROM supervisor WHERE perusahaan = ?',[perusahaan]);
+    const {perusahaan, supervisor} = req.query
+    if(supervisor !== undefined){
+    const [result] = await db.execute('SELECT * FROM supervisor WHERE perusahaan = ? AND email = ?',[perusahaan, supervisor]);
+    if(result.length === 0) return res.json({data:null})
+    return res.json({ data: result });  
+    }
+    const [result] = await db.execute('SELECT * FROM supervisor WHERE perusahaan = ?',[perusahaan]);
     res.json({ data: result });
   },
 
@@ -658,13 +748,26 @@ export default {
 
   async getPendaftar(req, res){
     const {supervisor, nim} = req.query
-    if(nim === undefined){
-      const [result] = await db.execute('SELECT * FROM pendaftar WHERE supervisor = ? AND status = ?',[supervisor, 'Menunggu']);
-      res.json({ data: result })
-    }else{
+
+    if(supervisor !== undefined && nim !== undefined){
       const [result] = await db.execute('SELECT * FROM pendaftar WHERE supervisor = ? AND nim = ?',[supervisor, nim])
-      res.json({ data: result })
+      if(result.length === 0) return res.json(null)
+      return res.json({ data: result })
     }
+
+    if(nim === undefined && supervisor !== undefined ){
+      const [result] = await db.execute('SELECT * FROM pendaftar WHERE supervisor = ? AND status = ?',[supervisor, 'Menunggu']);
+      if(result.length === 0) return res.json(null)
+      return res.json({ data: result })
+    }
+
+    if(supervisor === undefined && nim !== undefined){
+      const [result] = await db.execute('SELECT * FROM pendaftar WHERE nim = ?',[nim]);
+      if(result.length === 0) return res.json(null)
+      return res.json({ data: result })
+    }
+
+
   },
 
   async getCV(req, res){
@@ -751,15 +854,71 @@ export default {
     }
   },
 
+  async getLogbook(req,res){
+    const {nip, nim, id} = req.query
+    // dosen
+    if(nim === undefined && id=== undefined){
+      const [result] = await db.execute('SELECT * FROM logbook WHERE nip = ?',[nip])
+      if(result.length === 0) return res.json(null)
+      return res.status(200).json({data:result})
+    }
+    // mahasiswa
+    if(nip === undefined && id=== undefined){
+      const [result] = await db.execute('SELECT * FROM logbook WHERE nim = ?',[nim])
+      if(result.length === 0) return res.json(null)
+      return res.status(200).json({data:result})
+    }
+    // 1 mahasiswa
+    if(nip === undefined && nim === undefined){
+      const [result] = await db.execute('SELECT * FROM logbook WHERE id = ?',[id])
+      if(result.length === 0) return res.json(null)
+      return res.status(200).json({data:result})
+    }
+
+
+  },
+
+  async getPagination (req,res){
+    const {halaman} = req.query
+    const page = parseInt(halaman)
+    const limit = 4
+    const offset = (page - 1)*limit
+    
+    const [totalResult] = await db.execute('SELECT COUNT(*) as lowongan FROM lowongan')
+    const totalLowongan = totalResult[0].lowongan
+    const totalHalaman = Math.ceil(totalLowongan/limit)
+    
+    const [lowongan] = await db.execute('SELECT perusahaan, judul, kategori, masaMagang, dibutuhkan FROM lowongan LIMIT ? OFFSET ?',[limit, offset])
+    if(lowongan.length === 0) return res.json(null)
+    res.json({data:{
+      totalHalaman,
+      halaman_saat_ini: halaman,
+      lowongan
+    }})
+
+
+  },
+
+  async getPenilaian(req,res){
+    const {nim} = req.query
+    const [result] = await db.execute('SELECT * FROM penilaian WHERE nim = ?', [nim])
+    res.status(200).json({data:result})
+  },
+
   // delete
   async deleteBimbingan(req,res){
     const {nim} = req.body
+    console.log(nim)
     const [result] = await db.execute('DELETE FROM bimbingan WHERE nim = ?',[nim])
     return res.status(200).json({message:'sukses menghapus bimbingan', result})
   },
 
   async deleteLowongan(req,res){
     const {supervisor} = req.body
+    const [pendaftar] = await db.execute('SELECT * FROM pendaftar WHERE supervisor = ?',[supervisor])
+
+
+    if(pendaftar.length !== 0) await db.execute('DELETE FROM pendaftar WHERE supervisor = ?',[supervisor])
     const [result] = await db.execute(`DELETE FROM lowongan WHERE supervisor = ?`,[supervisor])
     return res.status(200).json({message:'sukses menghapus lowongan', result})
   },
@@ -771,33 +930,22 @@ export default {
   },
 
   async deleteAccount(req, res){
-    const {nim, nip, supervisor} = req.body
-    if(nim === undefined && supervisor === undefined){
-      const [response] = await db.execute('DELETE FROM dosen WHERE nip = ?',[nip])
-      const [response2] = await db.execute('DELETE FROM bimbingan WHERE nip = ?',[nip])
-      if(response.length === 0 && response2.length === 0) return res.status(401).json({message:'Dosen tidak ditemukan'})
+    const {nim, nip} = req.body
+    if(nim === undefined){
+      await db.execute('DELETE FROM dosen WHERE nip = ?',[nip])
+      await db.execute('DELETE FROM bimbingan WHERE nip = ?',[nip])
       res.status(200).json({message:'berhasil menghapus akun dosen'})
     }
-    if(nip === undefined && supervisor === undefined){
-      const [response] = await db.execute('DELETE FROM mahasiswa WHERE nim = ?',[nim])
-      const [response2] = await db.execute('DELETE FROM mahasiswa WHERE nim = ?',[nim])
-      if(response.length === 0 && response2.length === 0) return res.status(401).json({message:'Mahasiswa tidak ditemukan'})
+    if(nip === undefined){
+      await db.execute('DELETE FROM mahasiswa WHERE nim = ?',[nim])
+      await db.execute('DELETE FROM bimbingan WHERE nim = ?',[nim])
+      await db.execute('DELETE FROM pendaftar WHERE nim = ?',[nim])
+      await db.execute('DELETE FROM penilaian WHERE nim = ?',[nim])
       res.status(200).json({message:'berhasil menghapus akun mahasiswa'})
     }
-
-    // if(nim === undefined && nip === undefined){
-    //   const [response] = await db.execute('DELETE FROM supervisor WHERE email = ?',[supervisor])
-    //   if(response.length) return res.status(401).json({message:'Mahasiswa tidak ditemukan'})
-    
-    //   const [response2] = await db.execute('DELETE FROM pendaftar WHERE supervisor = ?',[supervisor])
-    //   if(response2.length) return res.status(401).json({message:'Mahasiswa tidak ditemukan'})
-      
-    //   const [response3] = await db.execute('DELETE FROM lowongan WHERE supervisor = ?',[supervisor])
-    //   if(response3.length) return res.status(401).json({message:'Mahasiswa tidak ditemukan'})
-    //   res.status(200).json({message:'berhasil menghapus akun supervisor'})
-    // }
   }
 };
+
 
 // middleware
 export const upload = multer({ storage: multer.memoryStorage() });

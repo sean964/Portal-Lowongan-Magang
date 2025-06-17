@@ -4,14 +4,12 @@ import Magang from '@/components/views/supervisor/fungtion/magang';
 
 const SupervisorDashboardPage = ({user}) => {
   return (
-    <>
       <DashboardLayout 
       title={'Supervisor | Dashboard'} 
       type={'supervisor'} >
         <SupervisorDashboard />
         <Magang/>
       </DashboardLayout>
-    </>
   );
 };
 

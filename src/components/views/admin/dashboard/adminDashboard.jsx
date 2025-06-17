@@ -1,11 +1,12 @@
-import { getKeyValue, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User, chip, Tooltip, Input, Spinner, Select, SelectItem } from "@heroui/react";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User, chip, Tooltip, Input, Spinner, Select, SelectItem, Button } from "@heroui/react";
 import React from "react";
 import { IoTrash } from "react-icons/io5";
 import useAdminDashboard from "./useAdminDashboard";
 import { Controller } from "react-hook-form";
+import { FaTrash } from "react-icons/fa";
 
 const AdminDashboard = () => {
-  const {control, handleErase, handleSubmit, isPending, data} = useAdminDashboard()
+  const {eraseService, data,handling,setHandling} = useAdminDashboard()
 
   const renderCell = React.useCallback((user, columnkey)=>{
 
@@ -16,7 +17,6 @@ const AdminDashboard = () => {
             const imageString = String.fromCharCode(...user.mahasiswaPhoto.data)
             const base64 = btoa(imageString)
             const photo = user.mahasiswaPhoto? `data:image/jpeg;base64,${base64}`: null
-            console.log('check photo', photo)
             return(
               <User avatarProps={{src: photo }} description={user.nim} name={cellValue} >
               {user.nim}
@@ -31,18 +31,41 @@ const AdminDashboard = () => {
         )
         
         case "dosen":
-          return(
-            <User avatarProps={{src:'/logo/dosen.jpeg'}} description={user.nip} name={cellValue} >
-            {user.nip}
-          </User>
+          if(user.dosenPhoto !== null){
+            const imageString = String.fromCharCode(...user.dosenPhoto.data)
+            const base64 = btoa(imageString)
+            const photo = user.dosenPhoto? `data:image/jpeg;base64,${base64}`: null
+            return(
+              <User avatarProps={{src: photo }} description={user.nip} name={cellValue} >
+              {user.nip}
+            </User>
           )
+        }
+
+        return(
+              <User avatarProps={{src:'/logo/dosen.jpeg'}} description={user.nip} name={cellValue} >
+              {user.nip}
+            </User>
+        )
 
         case 'status':
           return(
             <h1>{user.status}</h1>
           )
+
+        case 'hapus':
+          return(
+            <Button size="lg" variant="light" color="danger" onClick={(e)=>{
+              e.preventDefault()
+              eraseService(user.nim)
+              setHandling(-1)
+            }}>
+              <FaTrash size={25} />
+            </Button>
+          )
         }
   },[])
+
   const columns = [
     {
       key: "dosen",
@@ -55,42 +78,31 @@ const AdminDashboard = () => {
     {
       key:"status", 
       label:"Status"
+    },
+    {
+      key:"hapus",
+      label:"Aksi"
     }
   ]
 
 
   return(
     <div className="w-full gap-5 min-h-max flex flex-col justify-center items-center">
+      {data !== null ? (
       <Table aria-label="tabel bimbingan" >
-      <TableHeader columns={columns}>
+      <TableHeader className="w-full grid grid-cols-4" columns={columns}>
         {(column)=> <TableColumn key={column.key}>{column.label}</TableColumn>}
       </TableHeader>
-      <TableBody items={data} >{(item)=>(
+      <TableBody items={data} >
+      {(item)=>(
         <TableRow key={item.nim} >
           {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
         </TableRow>
       )}</TableBody>
       </Table>
-      <form className="w-full flex" onSubmit={handleSubmit(handleErase)}>
-
-      <Controller control={control} name="nim" render={({field})=>(
-        <Select
-        className="w-1/2"
-        label="Hapus Relasi Bimbingan"
-        {...field}
-        items={data}
-        >
-                    {data.map((data) => (
-                        <SelectItem key={data.nim}>
-                        {data.mahasiswa}
-                      </SelectItem>
-                    ))}
-                  </Select>
-      )}/>
-
-      <button type="submit" className="
-      " >{isPending? <Spinner color="primary" size="20" /> : <IoTrash color="danger" size={30}/>}</button>
-        </form>
+      ):(
+        <p className="font-bold text-xl">Belum membuat relasi bimbingan</p>
+      )}
     </div>
   )
 };

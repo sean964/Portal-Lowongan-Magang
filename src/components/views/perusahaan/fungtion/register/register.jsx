@@ -26,9 +26,8 @@ const RegisterSupervisor = ({perusahaan}) => {
     errors
   } = useRegisterSupervisor();
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center gap-10 lg:flex-row lg:gap-20">
-      <div>
-        <Card className="m-10">
+    <div className="flex h-fit w-full flex-col items-center justify-center gap-10 lg:flex-row lg:gap-20">
+        <Card className="">
           <CardBody className="flex w-full flex-col items-center justify-center px-10 py-8">
             <Image
               className="mb-2"
@@ -134,7 +133,6 @@ const RegisterSupervisor = ({perusahaan}) => {
           </CardBody>
         </Card>
       </div>
-    </div>
   );
 };
 

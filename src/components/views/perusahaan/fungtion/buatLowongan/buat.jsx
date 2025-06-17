@@ -29,7 +29,7 @@ return(
                     )}/>
                 </div>
                 
-                <div className="lg:w-1/5 w-3/5 h-1/5 flex flex-col justify-start items-center gap-3 mb-10">
+                <div className="lg:w-2/5 w-3/5 h-1/5 flex flex-col justify-start items-center gap-3 mb-10">
                     <Controller
                 name="supervisor"
                 control={control}

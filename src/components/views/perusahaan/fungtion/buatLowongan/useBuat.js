@@ -18,7 +18,7 @@ const lowonganSchema = yup.object().shape({
 })
 
 const useBuatLowongan = () => {
-const {control, handleSubmit, formState:{errors}, reset} = useForm({resolver:yupResolver(lowonganSchema)})
+const {control, handleSubmit, formState:{errors}} = useForm({resolver:yupResolver(lowonganSchema)})
 const {data:session} = useSession()
 
   const jurusan = [
@@ -69,7 +69,6 @@ const {mutate, isPending} = useMutation({
     },
     onSuccess:()=>{
         toast.success('Berhasil Membuat Lowongan')
-        reset()
     }
 })
 

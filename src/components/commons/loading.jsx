@@ -3,7 +3,7 @@ import nProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { useEffect, useState } from "react";
 
-nProgress.configure({ showSpinner: false, speed: 400, minimum: 0.25 });
+nProgress.configure({ showSpinner: true, speed: 400, minimum: 0.25 });
 
 const Loading = () =>{
     const router = useRouter();

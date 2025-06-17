@@ -7,9 +7,10 @@ const {handleNilai,mahasiswa,setNilaiSupervisor,setNim, nim, info} = usePenilaia
 
 
     return(
-        <div className="w-full h-screen flex justify-center items-center">
+        <div className="w-full h-fit flex justify-center items-center">
             <Card className="flex justify-center items-center w-1/2 h-1/2">
-                <CardBody className="w-full h-screen flex flex-col justify-center gap-10 font-semibold items-center">
+                <CardBody className="w-full h-fit p-10 flex flex-col justify-center gap-10 font-semibold items-center">
+                    <p className="w-full flex justify-center font-bold text-xl">Penilaian Mahasiswa Magang</p>
                 {info?.length !== 0 ? 
                 info?.map(({photo, name, nim})=>{
                     if(photo !== null ){

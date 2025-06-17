@@ -55,6 +55,11 @@ const usePendaftarForm = (supervisor, nim) =>{
 
     const handleTerima = async (e) =>{
         e.preventDefault()
+
+        if(diterima[0].diterima === diterima[0].dibutuhkan){
+            return toast.error('Lowongan telah penuh')
+        }
+
         const res = await fetch(`${NEXT_PUBLIC_API_URL}/terimaPendaftar`,{
             method:'PUT',
             headers:{'Content-Type':'application/json'},
@@ -71,21 +76,7 @@ const usePendaftarForm = (supervisor, nim) =>{
         body:JSON.stringify({nim})
         })
 
-        toast.success(response.message)
-        
-        if(diterima[0].diterima === diterima[0].dibutuhkan){
-            const res2 = await fetch(`${NEXT_PUBLIC_API_URL}/delete/lowongan`,{
-                method:"DELETE",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({supervisor})
-            })
-            const response2 = await res2.json()
-            if(res.ok) toast.success(response2.message)
-                router.push('/supervisor')
-        }
-        
         router.push('/supervisor/lowongan')
-        setHandling(!handling)
     }
 
     const handleTolak = async (e) =>{
@@ -102,6 +93,7 @@ const usePendaftarForm = (supervisor, nim) =>{
         if(!res.ok) toast.error(response.message)
         toast.success(response.message)
         setHandling(!handling)
+
     }
 
 

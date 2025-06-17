@@ -1,9 +1,11 @@
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { NEXT_PUBLIC_API_URL } from "../../../../environment/env"
+import { useRouter } from "next/router"
 
 const useDashboardLayoutSidebar = () =>{
 const {data:session} = useSession()
+const router = useRouter()
 const [user, setUser] = useState([])
 const [photo, setPhoto] = useState(null)
 const [hover, setHover] = useState(false)
@@ -13,6 +15,11 @@ const fetchData = async () =>{
         const res = await fetch(
            `${NEXT_PUBLIC_API_URL}/get/profile?email=${session?.user.email}&role=${session?.user.role}`);
          const data = await res.json();
+         if(data === null){
+             signOut()
+            return router.push('/auth/login')
+            }
+            
            setUser(data.user)
     }
 }

@@ -7,16 +7,10 @@ import { NEXT_PUBLIC_API_URL } from "../../../../../environment/env"
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 
-
-
-const eraseSchema = yup.object().shape({
-    supervisor:yup.string().required('pilih lowongan yang ingin dihapus')
-})
-
 const usePerusahaanDashboard = () =>{
     const [data, setData] = useState([])
     const {data:session} = useSession()
-    const [handling, setHandling] = useState(false)
+    const [handling, setHandling] = useState(0)
 
 
     const fetchData = async () =>{
@@ -34,9 +28,7 @@ const usePerusahaanDashboard = () =>{
         }
     },[handling,session])
 
-    const {control, handleSubmit} = useForm({resolve:yupResolver(eraseSchema)})
-    const eraseService = async ({supervisor}) =>{
-        setHandling(!handling)
+    const eraseService = async (supervisor) =>{
         if(supervisor === undefined){
             return toast.error('pilih lowongan yang ingin dihapus')
         }else{
@@ -47,22 +39,16 @@ const usePerusahaanDashboard = () =>{
                     supervisor
                 })
             })
-            toast.success('Berhasil menghapus relasi')
+            toast.success('Berhasil menghapus lowongan')
+            setHandling(+1)
         }
     }
-    const {mutate, isPending} = useMutation({
-        mutationFn:eraseService,
-    })
-    
-    const handleErase = ({supervisor}) => mutate({supervisor})
 
     return{
-        handleErase,
-        isPending,
-        control,
-        handleSubmit,
         eraseService,
-        data
+        data,
+        handling,
+        setHandling
     }
 
 

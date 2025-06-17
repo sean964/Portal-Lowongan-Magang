@@ -8,39 +8,37 @@ const LowonganCari = () =>{
 const {jurusan, lowongan, handleKategori, handleMasa, perusahaan, handlePerusahaan, auto} = useLowonganCari()
 
 return(
-    <div className="w-full min-h-screen flex flex-col justify-center items-center  lg:px-20 lg:py-10">
-        <Card className="w-full p-8 h-screen">
-             <CardBody className="w-full items-center flex flex-col p-10">
-                <p className="lg:text-3xl text-2xl font-bold mb-5">Lowongan magang:</p>
-                <div className="lg:w-2/5 font-semibold mb-5">
+    <div className="w-full h-fit flex flex-col justify-center items-center  lg:px-20 lg:py-10">
+
+                <p className="lg:text-3xl text-2xl font-bold mb-5 text-bayang">Daftar Lowongan Magang</p>
+                <div className="lg:w-full font-semibold mb-5 flex flex-row">
                       <Autocomplete 
                       selectedKey={perusahaan} 
                       onSelectionChange={handlePerusahaan}  
                       defaultItems={auto} 
                       variant="bordered"
                       startContent={<FaMagnifyingGlass  />}
-                      label={'Masukkan Perusahaan yang diinginkan'}>
+                      label={'Nama Perusahaan'}
+                      className="w-1/2 bg-white">
                       
                         {({name})=> <AutocompleteItem key={name} >{name}</AutocompleteItem>}
                       
                       </Autocomplete>
-                      <div className="flex gap-3 h-16 items-center justify-between">
                 <Select
                     label="kategori"
                     items={jurusan}
                     onChange={handleKategori}
                     variant="bordered"
-                    className=""
+                    className="w-1/3 bg-white"
                   >
                     {({label}) => (
                       <SelectItem key={label}>{label}</SelectItem>
                     )}
                   </Select>
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-2 items-center bg-white">
                   <Input type="number" className="w-3/5" label='Durasi' variant="bordered" onChange={handleMasa} />
                   <p>Bulan</p>
                     </div>
-                      </div>
                 </div>
                   
                 
@@ -82,9 +80,7 @@ return(
                 )
             }
         })}
-                </div>
-             </CardBody>
-        </Card>
+        </div>
     </div>
     )
 

@@ -7,7 +7,7 @@ const [nip, setNip] = useState(null)
 const [nim, setNim] = useState(null)
 const [dosen, setDosen] = useState([])
 const [mahasiswa, setMahasiswa] = useState([])
-const [click, setClick] = useState(false)
+const [click, setClick] = useState(0)
 
 const fetchMahasiswa = async () =>{
     const res = await fetch(`${NEXT_PUBLIC_API_URL}/get/mahasiswa`)
@@ -34,7 +34,7 @@ return()=>clearInterval(interval)
 },[click])
 
 const deleteService1 = async () =>{
-    setClick(!click)
+    setClick(click + 1)
     const res = await fetch(`${NEXT_PUBLIC_API_URL}/delete/account`,{
         method: "DELETE",
         headers:{"Content-Type":'application/json'},
@@ -44,10 +44,11 @@ const deleteService1 = async () =>{
     })
     const json = await res.json()
     if(!res.ok) return toast.error(json.message)
-    toast.success(json.message)
+        toast.success(json.message)
+        setClick(click - 1)
 }
 const deleteService2 = async () =>{
-    setClick(!click)
+    setClick(click+1)
     const res = await fetch(`${NEXT_PUBLIC_API_URL}/delete/account`,{
         method: "DELETE",
         headers:{"Content-Type":'application/json'},
@@ -57,7 +58,8 @@ const deleteService2 = async () =>{
     })
     const json = await res.json()
     if(!res.ok) return toast.error(json.message)
-    toast.success(json.message)
+        toast.success(json.message)
+    setClick(click-1)
 }
 
 
@@ -67,7 +69,9 @@ return{
     deleteService1,
     deleteService2,
     mahasiswa,
-    dosen
+    dosen,
+    setClick,
+    click
 }
 
 }

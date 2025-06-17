@@ -16,7 +16,7 @@ const registerSchema = yup.object().shape({
     .oneOf([yup.ref('password')], 'password not match')
     .required('masukkan kembali password'),
   email: yup.string().email().required('masukkan email perusahaan anda'),
-  birth: yup.date().required('masukkan tanggal lahir anda'),
+  angkatan: yup.number().min(2019, 'Angkatan minimal 2019').required('masukkan tanggal lahir anda'),
   gender: yup.string().required('masukkan jenis kelamin anda'),
   jurusan: yup.string().required('pilh jurusan mahasiswa'),
   adress: yup.string().required('masukkan alamat mahasiswa')
@@ -24,7 +24,29 @@ const registerSchema = yup.object().shape({
 
 const useRegisterMahasiswa = () => {
   const gender = [{ label: 'pria' }, { label: 'wanita' }];
+  const [file, setFile] = useState(null)
+  const [xl, setXl] = useState(false)
 
+  const handleExcel = (e) =>{
+    setFile(e.target.files[0])
+  }
+
+  const handleSubmitExcel = async (e) =>{
+    e.preventDefault()
+    if(file === null || file===undefined) return toast.error('Masukkan File')
+    console.log(file)
+    if(file.type !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return toast.error('Format file bukan Excel')
+    const formData = new FormData()
+    formData.append('file',file)
+    const res = await fetch(`${NEXT_PUBLIC_API_URL}/auth/registerExcel`,{
+      method:"POST",
+      body: formData
+    })
+    const json = await res.json()
+    if(!res.ok) return toast.error(json.message)
+    toast.success(json.message)
+    
+  }
   const jurusan = [
     { label: 'Teknik Sipil' },
     { label: 'Teknologi Pangan' },
@@ -56,7 +78,6 @@ const useRegisterMahasiswa = () => {
     handleSubmit,
     formState: { errors },
     reset,
-    setError,
   } = useForm({ resolver: yupResolver(registerSchema) });
 
   const registerService = async ({
@@ -66,12 +87,11 @@ const useRegisterMahasiswa = () => {
     confirmPassword,
     email,
     adress,
-    birth,
+    angkatan,
     gender,
     jurusan,
   }) => {
     const role = 'mahasiswa';
-    const birthFormatted = birth.toISOString().split('T')[0];
     const res = await fetch(`${NEXT_PUBLIC_API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-type': 'application/json' },
@@ -80,7 +100,7 @@ const useRegisterMahasiswa = () => {
         nim,
         role,
         email,
-        birthFormatted,
+        angkatan,
         gender,
         adress,
         jurusan,
@@ -100,7 +120,7 @@ const useRegisterMahasiswa = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: registerService,
     onError(error) {
-      toast.error(error.message)
+    toast.error(error.message)
     },
     onSuccess: () => {
       toast.success('Berhasil mendaftarkan mahasiswa')
@@ -115,7 +135,7 @@ const useRegisterMahasiswa = () => {
     confirmPassword,
     email,
     adress,
-    birth,
+    angkatan,
     gender,
     jurusan,
   }) =>
@@ -126,11 +146,10 @@ const useRegisterMahasiswa = () => {
       confirmPassword,
       email,
       adress,
-      birth,
+      angkatan,
       gender,
       jurusan,
     });
-
   return {
     handleRegister,
     isPending,
@@ -143,6 +162,10 @@ const useRegisterMahasiswa = () => {
     gender,
     jurusan,
     errors,
+    handleExcel,
+    handleSubmitExcel,
+    xl,
+    setXl
   };
 };
 

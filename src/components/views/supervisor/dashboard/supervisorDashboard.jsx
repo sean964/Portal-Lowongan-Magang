@@ -6,7 +6,7 @@ const SupervisorDashboard = () => {
   return(
     supervisor?.map(({judul, perusahaan})=>{
       return(
-        <div className="w-full font-bold  text-md flex text-center flex-row gap-5 mb-5">
+        <div key={judul} className="w-full font-bold  text-md flex text-center flex-row gap-5 mb-5">
           <Card className="w-2/5 px-2">
             <CardBody className="w-full flex flex-col items-center">
               <p>Nama perusahaan</p>

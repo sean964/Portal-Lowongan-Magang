@@ -6,7 +6,7 @@ import useDashboardLayoutSidebar from '@/components/layouts/dashboardLayout/useD
 const PhotoInput = () => {
   const { handlePhoto, handleSubmit, preview } = UsePhoto();
   return (
-    <div className='flex flex-col w-full h-screen items-center justify-center'>
+    <div className='flex flex-col w-full h-full items-center justify-center'>
      <Card className="m-10">
               <CardBody className="flex w-full flex-col items-center justify-center px-10 py-8 gap-4">
       {preview &&(
